@@ -11,6 +11,7 @@ import {
 
 import theme from './src/global/styles/theme';
 import { Dashboard } from './src/screens/Dashboard';
+import { Register } from './src/screens/Register';
 
 export default function App() {
   //usando para saber se a font já esta pronta (carregada)
@@ -26,7 +27,8 @@ export default function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <Dashboard />
+      {/* <Dashboard /> */}
+      <Register />
     </ThemeProvider>
   );
 }
