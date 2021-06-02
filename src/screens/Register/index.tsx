@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
     Keyboard, 
     Modal, 
@@ -11,9 +11,10 @@ import { yupResolver } from '@hookform/resolvers/yup';
 
 import { Button } from '../../components/Form/Button';
 import { CategorySelectButton } from '../../components/Form/CategorySelectButton';
-import { Input } from '../../components/Form/Input';
 import { TransactionTypeButton } from '../../components/Form/TransactionTypeButton';
 import { InputForm } from '../../components/Form/InputForm';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { CategorySelect } from '../CategorySelect';
 
@@ -45,6 +46,7 @@ export function Register(){
     //para guardarmos o estado quando o botao for selecionado
     const [transactionType, setTransactionType] = useState('');
     const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+    const dataKey = '@gofinances:transactions';
 
     const [category, setCategory] = useState({
         key: 'category',
@@ -71,7 +73,7 @@ export function Register(){
         setCategoryModalOpen(false);
     }
 
-    function handleRegister(form: FormData){
+    async function handleRegister(form: FormData){
         if(!transactionType){
             return Alert.alert('Selecione o tipo da transação 🤓')
         }
@@ -86,8 +88,27 @@ export function Register(){
             transactionType,
             category: category.key
         }
-        console.log(data)
+        
+        //armazenando no dispositivo do usuario
+        try {
+            await AsyncStorage.setItem(dataKey, JSON.stringify(data));
+
+        } catch (error) {
+            console.log(error)
+            Alert.alert("Não foi possível salvar");
+        }
     }
+
+    useEffect(() => {
+        async function loadData(){
+           const data = await AsyncStorage.getItem(dataKey);
+        //    passando para JSON novamente
+        //essa exclamação fala que ele pode confiar em mim, pois sempre vai vir algoe ele nunca vai ser nulo
+           console.log(JSON.parse(data!))
+        }
+
+        loadData();
+    }, [])
 
     return(
         //coloquei ele envolvendo geral pq coloco ele para caso eu clique em qualquer outro lugar ele fecha o teclado
