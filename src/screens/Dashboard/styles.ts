@@ -4,7 +4,7 @@ import { FlatList } from 'react-native';
 import { Feather} from '@expo/vector-icons';
 import { getStatusBarHeight } from 'react-native-iphone-x-helper';
 import { getBottomSpace } from 'react-native-iphone-x-helper';
-
+import { BorderlessButton } from 'react-native-gesture-handler'
 import { DataListProps } from '.';
 
 //coloco em letra maiuscula para que o react entenda que é um component
@@ -68,6 +68,8 @@ export const Icon = styled(Feather)`
     font-size: ${RFValue(24)}px;
 
 `;
+
+export const LogoutButton = styled(BorderlessButton)``;
 
 export const HighlightCards = styled.ScrollView.attrs({
     horizontal: true,

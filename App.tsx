@@ -8,10 +8,14 @@ import {
   Poppins_500Medium,
   Poppins_700Bold
 } from '@expo-google-fonts/poppins'
+import 'react-native-gesture-handler';
 
 import theme from './src/global/styles/theme';
 import { Dashboard } from './src/screens/Dashboard';
 import { Register } from './src/screens/Register';
+
+import { NavigationContainer } from '@react-navigation/native';
+import { AppRoutes } from './src/routes/app.routes';
 
 export default function App() {
   //usando para saber se a font já esta pronta (carregada)
@@ -27,8 +31,9 @@ export default function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      {/* <Dashboard /> */}
-      <Register />
+      <NavigationContainer>
+        <AppRoutes />
+      </NavigationContainer>
     </ThemeProvider>
   );
 }
