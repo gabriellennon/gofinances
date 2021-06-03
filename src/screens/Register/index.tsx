@@ -8,6 +8,8 @@ import {
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import uuid from 'react-native-uuid';
+import { useNavigation } from '@react-navigation/native';
 
 import { Button } from '../../components/Form/Button';
 import { CategorySelectButton } from '../../components/Form/CategorySelectButton';
@@ -48,6 +50,8 @@ export function Register(){
     const [categoryModalOpen, setCategoryModalOpen] = useState(false);
     const dataKey = '@gofinances:transactions';
 
+    const navigation = useNavigation();
+
     const [category, setCategory] = useState({
         key: 'category',
         name: 'Categoria',
@@ -56,12 +60,13 @@ export function Register(){
     const {
         control,
         handleSubmit,
+        reset,
         formState: { errors }
     } = useForm({
         resolver: yupResolver(schema)
     });
 
-    function handleTransactionTypes(type: 'up' | 'down' ){
+    function handleTransactionTypes(type: 'positive' | 'negative' ){
         setTransactionType(type);
     }
 
@@ -82,16 +87,38 @@ export function Register(){
             return Alert.alert('Selecione a categoria 😬')
         }
 
-        const data = {
+        const newTransaction = {
+            //biblioteca que gera ids pra gente, caso nao tenhamos o backend e já convertendo ele em strings
+            id: String(uuid.v4()),
             name: form.name,
             amount: form.amount,
-            transactionType,
-            category: category.key
+            type: transactionType,
+            category: category.key,
+            date: new Date()
         }
         
         //armazenando no dispositivo do usuario
         try {
-            await AsyncStorage.setItem(dataKey, JSON.stringify(data));
+            const data = await AsyncStorage.getItem(dataKey);
+            const currentData = data ?  JSON.parse(data) : [];
+
+            const dataFormatted = [
+                //recuperando os dados e ai na hora de salvar eu passo os daos que já estavam salvos e passoo novo
+                ...currentData, 
+                newTransaction
+            ];
+            await AsyncStorage.setItem(dataKey, JSON.stringify(dataFormatted));
+
+            //zerando os campos apos ele cadastrar nova transacao
+            reset();
+            setTransactionType('');
+            setCategory({
+                key: 'category',
+                name: 'Categoria'
+            })
+            //e após zerar eu encaminhoele pra tela de listagem 
+            navigation.navigate('Listagem');
+
 
         } catch (error) {
             console.log(error)
@@ -99,16 +126,23 @@ export function Register(){
         }
     }
 
-    useEffect(() => {
-        async function loadData(){
-           const data = await AsyncStorage.getItem(dataKey);
-        //    passando para JSON novamente
-        //essa exclamação fala que ele pode confiar em mim, pois sempre vai vir algoe ele nunca vai ser nulo
-           console.log(JSON.parse(data!))
-        }
+    // useEffect(() => {
+    //     async function loadData(){
+    //        const data = await AsyncStorage.getItem(dataKey);
+    //     //    passando para JSON novamente
+    //     //essa exclamação fala que ele pode confiar em mim, pois sempre vai vir algoe ele nunca vai ser nulo
+    //        console.log(JSON.parse(data!))
+    //     }
 
-        loadData();
-    }, [])
+    //     loadData();
+
+    //     //Funcao para limpar o async storage caso precise
+    //     // async function removeAll(){
+    //     //     await AsyncStorage.removeItem(dataKey);
+    //     // }
+
+    //     // removeAll();
+    // }, [])
 
     return(
         //coloquei ele envolvendo geral pq coloco ele para caso eu clique em qualquer outro lugar ele fecha o teclado
@@ -143,16 +177,16 @@ export function Register(){
                             <TransactionTypeButton 
                                 type="up" 
                                 title="Income" 
-                                onPress={() => handleTransactionTypes('up')} 
+                                onPress={() => handleTransactionTypes('positive')} 
                                 //passando o estado que tem qual o tipo selecionado
-                                isActive={transactionType === 'up'}
+                                isActive={transactionType === 'positive'}
                             />
 
                             <TransactionTypeButton 
                                 type="down" 
                                 title="Outcome" 
-                                onPress={() => handleTransactionTypes('down')} 
-                                isActive={transactionType === 'down'}
+                                onPress={() => handleTransactionTypes('negative')} 
+                                isActive={transactionType === 'negative'}
                             />
 
                         </TransactionTypes>

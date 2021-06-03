@@ -16,6 +16,8 @@ import { Register } from './src/screens/Register';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { AppRoutes } from './src/routes/app.routes';
+import 'intl';
+import 'intl/locale-data/jsonp/pt-BR';
 
 export default function App() {
   //usando para saber se a font já esta pronta (carregada)
