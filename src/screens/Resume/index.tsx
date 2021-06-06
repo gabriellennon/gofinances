@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { ActivityIndicator } from 'react-native';
 import { HistoryCard } from '../../components/HistoryCard';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,14 +8,22 @@ import {
     Header, 
     Title, 
     Content, 
-    ChartContainer 
+    ChartContainer ,
+    MonthSelect,
+    MonthSelectButton,
+    MonthSelectIcon,
+    Month,
+    LoadingContainer,
 } from './styles';
 import { categories } from '../../utils/categories';
 import { ScrollView } from 'react-native-gesture-handler';
 import { VictoryPie } from 'victory-native';
 import { RFValue } from 'react-native-responsive-fontsize';
-import { useTheme } from 'styled-components'
-
+import { useTheme } from 'styled-components';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { addMonths, subMonths, format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { useFocusEffect } from '@react-navigation/native';
 interface TransactionData {
     type: 'positive' | 'negative';
     name: string;
@@ -35,16 +44,35 @@ interface CategoryData {
 
 
 export function Resume(){
+    const [isLoading, setIsLoading] = useState(false);
+    const [selectedDate, setselectedDate] = useState(new Date());
     const [totalByCategories, setTotalByCategories] = useState<CategoryData[]>([]);
 
     const theme = useTheme();
 
+    function handleDateChange(action: 'next' | 'prev'){
+        
+        if(action === 'next'){
+            setselectedDate(addMonths(selectedDate, 1));
+        }else {
+            setselectedDate(subMonths(selectedDate, 1));
+        }
+    }
+
     async function loadData(){
+        setIsLoading(true);
+
         const dataKey = '@gofinances:transactions';
         const response = await AsyncStorage.getItem(dataKey);
         const responseFormatted = response ? JSON.parse(response) : [];
 
-        const expensives = responseFormatted.filter((expensive: TransactionData) => expensive.type === 'negative');
+        const expensives = responseFormatted
+        .filter((expensive: TransactionData) => 
+            expensive.type === 'negative' &&
+            new Date(expensive.date).getMonth() === selectedDate.getMonth() &&
+            new Date(expensive.date).getFullYear() === selectedDate.getFullYear()
+
+        );
 
 
 
@@ -93,44 +121,79 @@ export function Resume(){
         });
 
         setTotalByCategories(totalByCategory)
-    }
 
-    useEffect(() => {
+        setIsLoading(false);
+    }
+    
+    useFocusEffect(useCallback(() =>{
         loadData();
-    }, []);
+        //toda vez que meu selectedDate mudar, eu disparo o meu loadData
+    }, [selectedDate]));
 
     return(
         <Container>
-            <Header>
-                <Title>Resumo por categoria</Title>
-            </Header>
-            <Content >
-                <ChartContainer>
-                    <VictoryPie 
-                        data={totalByCategories}
-                        x="percentFormatted"
-                        y="total"
-                        colorScale={totalByCategories.map(category => category.color)}
-                        style={{
-                            labels: { fontSize: RFValue(18), fontWeight: 'bold', fill: theme.colors.shape }
-                        }}
-                        labelRadius={50}
-                    />
-                </ChartContainer>
-
-
+           
+                    <Header>
+                        <Title>Resumo por categoria</Title>
+                    </Header>
                 {
-                    totalByCategories.map(item => (
-                        <HistoryCard 
-                            key={item.key}
-                            title={item.name}
-                            amount={item.totalFormatted}
-                            color={item.color}
+                    isLoading ? 
+                        <LoadingContainer>
+                            <ActivityIndicator 
+                                color={theme.colors.primary}
+                                size="large"
+                            />
+                        </LoadingContainer>
+                    :
+                    <>
+                        <Content  
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ 
+                        paddingHorizontal: 24,
+                        paddingBottom: useBottomTabBarHeight(),
+                    }}
+                >
+
+                    <MonthSelect>
+                        <MonthSelectButton onPress={() => handleDateChange('prev')}>
+                            <MonthSelectIcon name="chevron-left" />
+                        </MonthSelectButton>
+
+                        <Month>{ format(selectedDate, 'MMMM, yyyy', {locale: ptBR}) }</Month>
+
+                        <MonthSelectButton onPress={() => handleDateChange('next')}>
+                            <MonthSelectIcon  name="chevron-right" />
+                        </MonthSelectButton>
+                    </MonthSelect>
+
+                    <ChartContainer>
+                        <VictoryPie 
+                            data={totalByCategories}
+                            x="percentFormatted"
+                            y="total"
+                            colorScale={totalByCategories.map(category => category.color)}
+                            style={{
+                                labels: { fontSize: RFValue(18), fontWeight: 'bold', fill: theme.colors.shape }
+                            }}
+                            labelRadius={50}
                         />
-                        
-                    ))
+                    </ChartContainer>
+
+
+                    {
+                        totalByCategories.map(item => (
+                            <HistoryCard 
+                                key={item.key}
+                                title={item.name}
+                                amount={item.totalFormatted}
+                                color={item.color}
+                            />
+                            
+                        ))
+                    }
+                </Content>
+                    </>
                 }
-            </Content>
         </Container>
     )
 }
