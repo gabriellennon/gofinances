@@ -18,6 +18,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { AppRoutes } from './src/routes/app.routes';
 import 'intl';
 import 'intl/locale-data/jsonp/pt-BR';
+import { SignIn } from './src/screens/SignIn';
+import { AuthProvider } from './src/hooks/auth';
 
 export default function App() {
   //usando para saber se a font já esta pronta (carregada)
@@ -35,7 +37,11 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <NavigationContainer>
         <StatusBar barStyle="light-content" />
-        <AppRoutes />
+          {/* valor atual */}
+          <AuthProvider>
+            {/* <AppRoutes /> */}
+            <SignIn /> 
+          </AuthProvider>
       </NavigationContainer>
     </ThemeProvider>
   );
