@@ -1,4 +1,5 @@
 import React, {useContext} from 'react';
+import { Alert } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 
 import AppleSvg from '../../assets/icon/apple_icon.svg';
@@ -19,7 +20,27 @@ import {
 
 export function SignIn(){
     //useContext é para eu conseguir acessar meu contexto
-    const { user } = useAuth();
+    const { user, signInWithGoogle, signInWithApple } = useAuth();
+    console.log(user)
+
+
+    async function handlesignInWithGoogle(){
+        try {
+            await signInWithGoogle();
+        } catch (error) {
+            console.log(error);
+            Alert.alert('Não foi possívelconectar a conta Google')
+        }
+    }
+
+    async function handlesignInWithApple(){
+        try {
+            await signInWithApple();
+        } catch (error) {
+            console.log(error);
+            Alert.alert('Não foi possívelconectar a conta Apple')
+        }
+    }
 
 
     return(
@@ -42,11 +63,13 @@ export function SignIn(){
                     <SignInSocialButton  
                         title="Entrar com Google"
                         svg={GoogleSvg}
+                        onPress={handlesignInWithGoogle}
                     />
                     
                     <SignInSocialButton  
                         title="Entrar com Apple"
                         svg={AppleSvg}
+                        onPress={handlesignInWithApple}
                     />
                 </FooterWrapper>
             </Footer>
