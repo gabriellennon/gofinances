@@ -1,3 +1,4 @@
+//Rotas privadas
 import React from 'react';
 import { useTheme } from 'styled-components'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';

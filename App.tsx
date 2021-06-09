@@ -14,7 +14,7 @@ import theme from './src/global/styles/theme';
 import { Dashboard } from './src/screens/Dashboard';
 import { Register } from './src/screens/Register';
 
-import { NavigationContainer } from '@react-navigation/native';
+import { Routes } from './src/routes';
 import { AppRoutes } from './src/routes/app.routes';
 import 'intl';
 import 'intl/locale-data/jsonp/pt-BR';
@@ -35,14 +35,11 @@ export default function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <NavigationContainer>
         <StatusBar barStyle="light-content" />
           {/* valor atual */}
           <AuthProvider>
-            {/* <AppRoutes /> */}
-            <SignIn /> 
+              <Routes/>
           </AuthProvider>
-      </NavigationContainer>
     </ThemeProvider>
   );
 }
