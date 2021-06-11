@@ -1,5 +1,5 @@
-import React, {useContext} from 'react';
-import { Alert } from 'react-native';
+import React, {useContext, useState} from 'react';
+import { ActivityIndicator, Alert, Platform } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 
 import AppleSvg from '../../assets/icon/apple_icon.svg';
@@ -7,6 +7,7 @@ import GoogleSvg from '../../assets/icon/google-icon.svg';
 import LogoSvg from '../../assets/icon/logo.svg';
 import { SignInSocialButton } from '../../components/SignInSocialButton';
 import { useAuth } from '../../hooks/auth';
+import { useTheme } from 'styled-components';
 
 import { 
     Container,
@@ -23,22 +24,28 @@ export function SignIn(){
     const { user, signInWithGoogle, signInWithApple } = useAuth();
     console.log(user)
 
+    const [isLoading, setIsLoading] = useState(false);
+    const theme = useTheme();
 
     async function handlesignInWithGoogle(){
         try {
-            await signInWithGoogle();
+            setIsLoading(true);
+            return await signInWithGoogle();
         } catch (error) {
             console.log(error);
             Alert.alert('Não foi possívelconectar a conta Google')
+            setIsLoading(false)
         }
     }
 
     async function handlesignInWithApple(){
         try {
-            await signInWithApple();
+            setIsLoading(true);
+            return await signInWithApple();
         } catch (error) {
             console.log(error);
             Alert.alert('Não foi possívelconectar a conta Apple')
+            setIsLoading(false)
         }
     }
 
@@ -66,12 +73,17 @@ export function SignIn(){
                         onPress={handlesignInWithGoogle}
                     />
                     
-                    <SignInSocialButton  
+                    {
+                        Platform.OS === 'ios' &&
+                        <SignInSocialButton  
                         title="Entrar com Apple"
                         svg={AppleSvg}
                         onPress={handlesignInWithApple}
-                    />
+                        />
+                    }
                 </FooterWrapper>
+
+                { isLoading && <ActivityIndicator color={theme.colors.shape} style={{ marginTop: 18 }}  /> }
             </Footer>
 
         </Container>

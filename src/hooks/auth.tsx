@@ -18,6 +18,8 @@ interface IAuthContextData {
     user: User;
     signInWithGoogle(): Promise<void>
     signInWithApple(): Promise<void>
+    signOut(): Promise<void>;
+    userStorageLoading: boolean;
 }
 
 //valor inicial
@@ -69,12 +71,15 @@ function AuthProvider({ children }: AuthProviderProps){
             })
 
             if(credential){
+                // ! = dizendo que sempre vai ter um email
+                const name = credential.fullName!.givenName;
+                const photo = `https://ui-avatars.com/api/?name=${name}&length=1`;
+
                 const userLogged = {
                     id: String(credential.user),
-                    // ! = dizendo que sempre vai ter um email
                     email: credential.email!,
-                    name: credential.fullName!.givenName,
-                    photo: undefined
+                    name,
+                    photo: photo
                 };
 
                 setUser(userLogged);
@@ -84,6 +89,11 @@ function AuthProvider({ children }: AuthProviderProps){
         } catch (error) {
             throw new Error(error);
         }
+    }
+
+    async function signOut(){
+        setUser({} as User);
+        await AsyncStorage.removeItem(userStorageKey);
     }
 
     //carregando as informacoes do async storage para salvar no nosso estado
@@ -106,7 +116,9 @@ function AuthProvider({ children }: AuthProviderProps){
         <AuthContext.Provider value={{ 
             user,
             signInWithGoogle,
-            signInWithApple 
+            signInWithApple,
+            signOut,
+            userStorageLoading
         }}>
             { children }
         </AuthContext.Provider>
