@@ -28,6 +28,7 @@ import {
     Fields,
     TransactionTypes
 } from './styles';
+import { useAuth } from '../../hooks/auth';
 
 //Interface para tipar o meu form
 interface FormData {
@@ -49,7 +50,10 @@ export function Register(){
     //para guardarmos o estado quando o botao for selecionado
     const [transactionType, setTransactionType] = useState('');
     const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-    const dataKey = '@gofinances:transactions';
+    const { user } = useAuth();
+
+    //vinculando o usuario e suas transacoes a um id
+    const dataKey = `@gofinances:transactions_user:${user.id}`;
 
     const navigation = useNavigation();
 
